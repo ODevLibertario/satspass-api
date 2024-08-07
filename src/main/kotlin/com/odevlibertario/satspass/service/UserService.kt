@@ -1,7 +1,9 @@
 package com.odevlibertario.satspass.service
 
 import com.odevlibertario.satspass.dao.UserDao
+import com.odevlibertario.satspass.model.ResetPasswordRequest
 import com.odevlibertario.satspass.model.SignUpRequest
+import com.odevlibertario.satspass.model.UpdatePasswordRequest
 import com.odevlibertario.satspass.model.User
 import com.odevlibertario.satspass.model.UserRole
 import com.odevlibertario.satspass.model.UserStatus
@@ -9,11 +11,11 @@ import com.odevlibertario.satspass.model.VerifyRequest
 import com.odevlibertario.satspass.util.validateEmail
 import com.odevlibertario.satspass.util.validateNotEmpty
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-@Component
+@Service
 class UserService(
     val passwordEncoder: PasswordEncoder,
     val userDao: UserDao,
@@ -48,6 +50,24 @@ class UserService(
         } else {
             throw IllegalArgumentException("Failed to verify email")
         }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    fun resetPassword(request: ResetPasswordRequest) {
+        val newPassword = UUID.randomUUID().toString().replace("-", "").takeLast(6)
+
+        userDao.updateUserPassword(request.email, passwordEncoder.encode(newPassword))
+        emailService.sendSimpleEmail(request.email, "Satspass - Recuperação de Senha", "Seu nova senha para a plataforma é: $newPassword")
+    }
+
+    fun updatePassword(request: UpdatePasswordRequest) {
+        val user = userDao.getUser(request.email) ?: throw IllegalArgumentException("User not found")
+
+        if(user.password != passwordEncoder.encode(request.oldPassword)) {
+            throw IllegalArgumentException("Incorrect current password")
+        }
+
+        userDao.updateUserPassword(request.email, passwordEncoder.encode(request.newPassword))
     }
 
 

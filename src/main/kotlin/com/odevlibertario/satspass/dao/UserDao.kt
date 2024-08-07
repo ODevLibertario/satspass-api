@@ -75,6 +75,10 @@ class UserDao(val jdbcTemplate: JdbcTemplate) {
         jdbcTemplate.update("UPDATE satspass.user SET status = ?::satspass.user_status, updated_at = now() WHERE id = ?::uuid", userStatus.name, id)
     }
 
+    fun updateUserPassword(email: String, password: String) {
+        jdbcTemplate.update("UPDATE satspass.user SET password = ?, updated_at = now() WHERE email = ?", password, email)
+    }
+
     fun getRoles(userId: String): List<String> {
         return jdbcTemplate.query("SELECT role FROM satspass.user_role WHERE user_id = ?::uuid",
             { rs: ResultSet, _: Int ->

@@ -39,6 +39,7 @@ class SecurityConfig @Autowired constructor(
             .csrf { it.ignoringRequestMatchers("/**") }
             .authorizeHttpRequests{requests ->
                 requests.requestMatchers("/auth/**").permitAll()
+                requests.requestMatchers(AntPathRequestMatcher("/user/**")).hasAnyAuthority("EVENT_CUSTOMER", "EVENT_MANAGER", "ADMIN")
                 requests.requestMatchers(AntPathRequestMatcher("/customer/**")).hasAuthority("EVENT_CUSTOMER")
                 requests.requestMatchers(AntPathRequestMatcher("/manager/**")).hasAuthority("EVENT_MANAGER")
                 requests.requestMatchers(AntPathRequestMatcher("/admin/**")).hasAuthority("ADMIN")

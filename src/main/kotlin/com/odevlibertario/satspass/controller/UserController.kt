@@ -2,6 +2,7 @@ package com.odevlibertario.satspass.controller
 
 import com.odevlibertario.satspass.model.SignInRequest
 import com.odevlibertario.satspass.model.SignUpRequest
+import com.odevlibertario.satspass.model.UpdatePasswordRequest
 import com.odevlibertario.satspass.model.VerifyRequest
 import com.odevlibertario.satspass.security.JwtTokenProvider
 import com.odevlibertario.satspass.service.UserService
@@ -20,11 +21,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/customer")
-class CustomerController {
+@RequestMapping("/user")
+class UserController {
 
-    @GetMapping("/hello-world")
-    fun helloWorld(): ResponseEntity<*> {
-        return ok("Hello world")
+    @Autowired
+    lateinit var userService: UserService
+
+    @PostMapping("/update-password")
+    fun updatePassword(@RequestBody request: UpdatePasswordRequest): ResponseEntity<*> {
+        userService.updatePassword(request)
+        return ok(null)
     }
 }
