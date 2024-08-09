@@ -29,3 +29,26 @@ CREATE TABLE satspass.user_role (
 );
 
 CREATE INDEX idx_user_role ON satspass.user_role (user_id);
+
+--changeset odevlibertario:01-event
+CREATE TYPE satspass.event_status AS ENUM ('DRAFT', 'PUBLISHED');
+CREATE TABLE satspass.event (
+    id uuid PRIMARY KEY,
+    name TEXT,
+    start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    publicity_image_url TEXT NULL,
+    status satspass.event_status,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+--changeset odevlibertario:02-event-manager-id
+ALTER TABLE satspass.event
+ADD COLUMN manager_id UUID NOT NULL;
+
+ALTER TABLE satspass.event
+ADD CONSTRAINT fk_user
+FOREIGN KEY (manager_id)
+REFERENCES satspass.user(id);
+

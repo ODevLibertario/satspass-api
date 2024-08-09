@@ -1,6 +1,7 @@
 package com.odevlibertario.satspass.service
 
 import com.odevlibertario.satspass.dao.UserDao
+import com.odevlibertario.satspass.model.SatspassUserDetails
 import com.odevlibertario.satspass.model.UserStatus
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -20,11 +21,6 @@ class UserDetailsService(
 
         val roles = userDao.getRoles(user.id)
 
-        return org.springframework.security.core.userdetails.User.builder()
-            .username(email)
-            .password(user.password)
-            .authorities(roles.map { role -> SimpleGrantedAuthority(role) })
-            .disabled(user.userStatus != UserStatus.ACTIVE)
-            .build()
+        return SatspassUserDetails(user.id, user.email, user.password, roles.map { role -> SimpleGrantedAuthority(role) }.toMutableList())
     }
 }
