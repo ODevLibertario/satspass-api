@@ -1,22 +1,22 @@
 package com.odevlibertario.satspass.controller
 
+import com.odevlibertario.satspass.model.TicketCategory
 import com.odevlibertario.satspass.model.UpsertEventRequest
+import com.odevlibertario.satspass.model.UpsertTicketCategoryRequest
 import com.odevlibertario.satspass.service.EventService
+import com.odevlibertario.satspass.service.TicketService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.annotation.Id
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/manager")
 class ManagerController {
+    @Autowired
+    private lateinit var ticketService: TicketService
+
     @Autowired
     lateinit var eventService: EventService
 
@@ -41,5 +41,30 @@ class ManagerController {
     @GetMapping("/events")
     fun getEvents() : ResponseEntity<*> {
         return ok(eventService.getEvents())
+    }
+
+    @PostMapping("events/{eventId}/ticket-categories")
+    fun addTicketCategory(@PathVariable eventId: String, @RequestBody request: UpsertTicketCategoryRequest): ResponseEntity<*> {
+        ticketService.addTicketCategory(eventId, request)
+        return ok(null)
+    }
+    @GetMapping("/events/{eventId}/ticket-categories")
+    fun getTicketCategories(@PathVariable eventId: String) : ResponseEntity<*> {
+        return ok(ticketService.getTicketCategories(eventId))
+    }
+    @PutMapping("/events/{eventId}/ticket-categories/{ticketCategoryId}")
+    fun updateTicketCategory(@PathVariable eventId: String, @PathVariable ticketCategoryId: String, @RequestBody request: UpsertTicketCategoryRequest): ResponseEntity<*> {
+        ticketService.updateTicketCategory(eventId, ticketCategoryId, request)
+        return ok(null)
+    }
+    @DeleteMapping("/events/{eventId}/ticket-categories/{ticketCategoryId}")
+    fun deleteTicketCategory(@PathVariable eventId: String, @PathVariable ticketCategoryId: String): ResponseEntity<*> {
+        ticketService.deleteTicketCategory(eventId, ticketCategoryId)
+        return ok(null)
+    }
+    @DeleteMapping("/events/{eventId}")
+    fun deleteEvent(@PathVariable eventId: String) : ResponseEntity<*> {
+        eventService.deleteEvent(eventId)
+        return ok(null)
     }
 }

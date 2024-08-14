@@ -52,3 +52,28 @@ ADD CONSTRAINT fk_user
 FOREIGN KEY (manager_id)
 REFERENCES satspass.user(id);
 
+--changeset odevlibertario:03-ticket-category
+CREATE TABLE satspass.ticket_category(
+    id UUID PRIMARY KEY,
+    event_id UUID,
+    category_name TEXT,
+    price INT,
+    currency TEXT,
+    quantity INT,
+    sales_start_date TIMESTAMP WITH TIME ZONE,
+    sales_end_date TIMESTAMP WITH TIME ZONE NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_columns UNIQUE (event_id, category_name)
+);
+
+--changeset odevlibertario:04-ticket-category-constraint
+ALTER TABLE satspass.ticket_category
+ADD CONSTRAINT fk_ticket_category_event
+FOREIGN KEY (event_id)
+REFERENCES satspass.event(id);
+
+
+
+
+

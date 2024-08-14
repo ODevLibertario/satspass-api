@@ -105,4 +105,26 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
             rs.getTimestamp("updated_at").toInstant(),
         )
     }
+    fun getEvent(eventId: String): Event? {
+        return jdbcTemplate.query("""
+             SELECT id, 
+                manager_id, 
+                name, 
+                start_date, 
+                end_date, 
+                publicity_image_url, 
+                status,
+                created_at,
+                updated_at
+                 FROM satspass.event
+                 WHERE id = ?::uuid
+        """.trimIndent(),eventRowMapper(), eventId).firstOrNull()
+    }
+    fun deleteEvent(eventId: String) {
+        jdbcTemplate.update("""
+            DELETE FROM satspass.event
+            WHERE id = ?::uuid
+          """.trimIndent(), eventId
+        )
+    }
 }

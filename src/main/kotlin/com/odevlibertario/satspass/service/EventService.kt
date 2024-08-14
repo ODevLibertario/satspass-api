@@ -1,18 +1,17 @@
 package com.odevlibertario.satspass.service
 
 import com.odevlibertario.satspass.dao.EventDao
+import com.odevlibertario.satspass.dao.TicketDao
 import com.odevlibertario.satspass.model.*
 import com.odevlibertario.satspass.util.getCurrentUser
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.UUID
 
 @Service
 class EventService(
-    val eventDao: EventDao
+    val eventDao: EventDao,
+    private val ticketDao: TicketDao
 ) {
     fun addEvent(request: UpsertEventRequest) {
         validateEvent(request)
@@ -39,6 +38,13 @@ class EventService(
         }
     }
 
+    fun isPublished(eventId: String): Boolean{
+        val event = eventDao.getEvent(eventId)
+        if(event == null){
+            throw IllegalArgumentException("O evento não existe")
+        }
+        return event.eventStatus == EventStatus.PUBLISHED
+    }
     fun updateEvent(eventId: String, request: UpsertEventRequest) {
         validateEvent(request)
         eventDao.updateEvent(eventId, request)
@@ -52,4 +58,13 @@ class EventService(
     fun getEvents(): List<Event> {
        return eventDao.getEvents(getCurrentUser().id)
     }
+
+    fun deleteEvent(eventId: String) {
+         if(isPublished(eventId)){
+             throw IllegalArgumentException("O evento publicado não pode ser deletado")
+         }
+        eventDao.deleteEvent(eventId)
+    }
+
+
 }
