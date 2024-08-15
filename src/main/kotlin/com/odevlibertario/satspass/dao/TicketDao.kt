@@ -1,9 +1,6 @@
 package com.odevlibertario.satspass.dao
 
-import com.odevlibertario.satspass.model.Currency
-import com.odevlibertario.satspass.model.Ticket
-import com.odevlibertario.satspass.model.TicketCategory
-import com.odevlibertario.satspass.model.UpsertTicketCategoryRequest
+import com.odevlibertario.satspass.model.*
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
@@ -15,7 +12,8 @@ import java.time.Instant
 @Repository
 class TicketDao(val jdbcTemplate: JdbcTemplate) {
     fun addTicketCategory(ticketCategory: TicketCategory) {
-        jdbcTemplate.update("""
+        jdbcTemplate.update(
+            """
             INSERT INTO satspass.ticket_category (
                 id,
                 event_id,
@@ -45,11 +43,13 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             ps.setObject(5, ticketCategory.currency.name)
             ps.setInt(6, ticketCategory.quantity)
             ps.setObject(7, Timestamp.from(ticketCategory.salesStarDate), Types.TIMESTAMP)
-            ps.setObject(8, Timestamp.from(ticketCategory.salesEndDate), Types.TIMESTAMP)        }
+            ps.setObject(8, Timestamp.from(ticketCategory.salesEndDate), Types.TIMESTAMP)
+        }
     }
 
     fun getTicketCategories(eventId: String): List<TicketCategory> {
-        return jdbcTemplate.query("""
+        return jdbcTemplate.query(
+            """
             SELECT id,
                 event_id,
                 category_name,
@@ -62,7 +62,8 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
                 updated_at
                 FROM satspass.ticket_category
                 WHERE event_id = ?::uuid  
-        """.trimIndent(), ticketCategoryRomMapper(), eventId)
+        """.trimIndent(), ticketCategoryRomMapper(), eventId
+        )
     }
 
     private fun ticketCategoryRomMapper() = { rs: ResultSet, _: Int ->
@@ -81,9 +82,10 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
 
 
     }
-    
+
     fun updateTicketCategory(eventId: String, ticketCategoryId: String, request: UpsertTicketCategoryRequest) {
-        jdbcTemplate.update("""
+        jdbcTemplate.update(
+            """
             UPDATE satspass.ticket_category
             SET category_name = ?,
                 price = ?,
@@ -94,7 +96,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
                 updated_at = ?
             WHERE id = ?::uuid
         """.trimIndent()
-        ){ ps ->
+        ) { ps ->
             ps.setString(1, request.categoryName)
             ps.setInt(2, request.price)
             ps.setString(3, request.currency.name)
@@ -105,23 +107,27 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             ps.setString(8, ticketCategoryId)
         }
     }
+
     fun deleteTicketCategory(ticketCategoryId: String) {
-        jdbcTemplate.update("""
+        jdbcTemplate.update(
+            """
             DELETE FROM satspass.ticket_category
             WHERE id = ?::uuid
             """.trimIndent(), ticketCategoryId
         )
     }
 
-    fun getCountForTickerCategory(tickerCategoryId: String): Int{
+    fun getCountForTickerCategory(tickerCategoryId: String): Int {
         return jdbcTemplate.query("""
             SELECT count(*) AS c FROM satspass.ticket
             WHERE ticket_category_id = ?::uuid           
-        """, RowMapper { rs: ResultSet, _: Int -> rs.getInt("c")}, tickerCategoryId).first()
+        """, RowMapper { rs: ResultSet, _: Int -> rs.getInt("c") }, tickerCategoryId
+        ).first()
     }
 
     fun getTicketCategory(ticketCategoryId: String): TicketCategory {
-        return jdbcTemplate.query("""
+        return jdbcTemplate.query(
+            """
             SELECT id,
                 event_id,
                 category_name,
@@ -134,34 +140,71 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
                 updated_at
                 FROM satspass.ticket_category
                 WHERE id = ?::uuid  
-        """.trimIndent(), ticketCategoryRomMapper(), ticketCategoryId).first()
+        """.trimIndent(), ticketCategoryRomMapper(), ticketCategoryId
+        ).first()
     }
 
     fun addTicket(ticket: Ticket) {
-        jdbcTemplate.update("""
+        jdbcTemplate.update(
+            """
             INSERT INTO satspass.ticket(
                 id,
                 event_id,
                 ticket_category_id,
                 user_id,
                 qr_code,
-                status
+                status,
+                payment_hash
         ) VALUES (
             ?::uuid,
             ?::uuid,
             ?::uuid,
             ?::uuid,
             ?,
-            ?:: satspass.ticket_status
+            ?:: satspass.ticket_status,
+            ?
             )
             """.trimIndent()
-        ){  ps ->
+        ) { ps ->
             ps.setString(1, ticket.id)
             ps.setString(2, ticket.eventId)
             ps.setString(3, ticket.ticketCategoryId)
             ps.setString(4, ticket.userId)
             ps.setString(5, ticket.qrCode)
-            ps.setString(6,ticket.statusTicket.name)
+            ps.setString(6, ticket.statusTicket.name)
+            ps.setString(7, ticket.paymentHash)
         }
+    }
+
+    fun getTickets(userId: String): List<Ticket> {
+        return jdbcTemplate.query(
+            """
+            SELECT id,
+                event_id,
+                ticket_category_id,
+                user_id,
+                qr_code,
+                status,
+                payment_hash,
+                created_at,
+                updated_at
+                FROM satspass.ticket
+                WHERE user_id = ?::uuid
+                """.trimIndent(), ticketRomMapper(), userId
+        )
+    }
+
+    private fun ticketRomMapper() = { rs: ResultSet, _: Int ->
+        Ticket(
+            rs.getString("id"),
+            rs.getString("event_id"),
+            rs.getString("ticket_category_id"),
+            rs.getString("user_id"),
+            rs.getString("qr_code"),
+            TicketStatus.valueOf(rs.getString("status")),
+            rs.getString("payment_hash"),
+            rs.getTimestamp("created_at").toInstant(),
+            rs.getTimestamp("updated_at").toInstant(),
+        )
     }
 }

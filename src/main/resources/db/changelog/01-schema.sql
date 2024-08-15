@@ -85,6 +85,14 @@ CREATE TABLE satspass.ticket(
     payment_hash TEXT
 );
 
+--changeset odevlibertario:06-ticket-timestamo
+ALTER TABLE satspass.ticket
+ADD COLUMN created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW();
+
+--changeset odevlibertario:07-NOT-NULL
+ALTER TABLE satspass.ticket
+ALTER COLUMN payment_hash SET NOT NULL;
 
 
 

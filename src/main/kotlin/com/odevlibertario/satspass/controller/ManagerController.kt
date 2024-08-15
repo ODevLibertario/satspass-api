@@ -1,12 +1,10 @@
 package com.odevlibertario.satspass.controller
 
-import com.odevlibertario.satspass.model.TicketCategory
 import com.odevlibertario.satspass.model.UpsertEventRequest
 import com.odevlibertario.satspass.model.UpsertTicketCategoryRequest
 import com.odevlibertario.satspass.service.EventService
 import com.odevlibertario.satspass.service.TicketService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.annotation.Id
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.web.bind.annotation.*
@@ -39,8 +37,8 @@ class ManagerController {
     }
 
     @GetMapping("/events")
-    fun getEvents() : ResponseEntity<*> {
-        return ok(eventService.getEvents())
+    fun getEventsFromCurrentUser() : ResponseEntity<*> {
+        return ok(eventService.getEventsFromCurrentUser())
     }
 
     @PostMapping("events/{eventId}/ticket-categories")

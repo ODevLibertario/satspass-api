@@ -89,5 +89,9 @@ class TicketService(
         }
     }
 
+    fun getTicket(userId: String): List<Ticket> {
+        return ticketDao.getTickets(userId)
+    }
+
 
 }

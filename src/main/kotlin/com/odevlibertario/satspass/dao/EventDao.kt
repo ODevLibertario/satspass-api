@@ -101,7 +101,7 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
             rs.getTimestamp("end_date").toInstant(),
             rs.getString("publicity_image_url"),
             EventStatus.valueOf(rs.getString("status")),
-            rs.getTimestamp("start_date").toInstant(),
+            rs.getTimestamp("created_at").toInstant(),
             rs.getTimestamp("updated_at").toInstant(),
         )
     }
@@ -127,4 +127,23 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
           """.trimIndent(), eventId
         )
     }
+
+    fun getPublishedEvents(): List<Event> {
+        return jdbcTemplate.query("""
+            SELECT id, 
+                manager_id, 
+                name, 
+                start_date, 
+                end_date, 
+                publicity_image_url, 
+                status,
+                created_at,
+                updated_at
+                FROM satspass.event
+                Where status = ?:: satspass.event_status 
+            """.trimIndent(), eventRowMapper(), EventStatus.PUBLISHED.name
+        )
+    }
+
+
 }

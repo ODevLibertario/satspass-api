@@ -55,7 +55,7 @@ class EventService(
 
     }
 
-    fun getEvents(): List<Event> {
+    fun getEventsFromCurrentUser(): List<Event> {
        return eventDao.getEvents(getCurrentUser().id)
     }
 
@@ -69,5 +69,8 @@ class EventService(
         return eventDao.getEvent(eventId)
     }
 
+    fun getPublishedEvents(): List<Event> {
+        return eventDao.getPublishedEvents()
+    }
 
 }
