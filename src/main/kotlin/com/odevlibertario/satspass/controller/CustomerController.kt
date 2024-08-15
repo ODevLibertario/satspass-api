@@ -4,6 +4,8 @@ import com.odevlibertario.satspass.model.SignInRequest
 import com.odevlibertario.satspass.model.SignUpRequest
 import com.odevlibertario.satspass.model.VerifyRequest
 import com.odevlibertario.satspass.security.JwtTokenProvider
+import com.odevlibertario.satspass.service.BitcoinService
+import com.odevlibertario.satspass.service.TicketService
 import com.odevlibertario.satspass.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -13,18 +15,18 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/customer")
 class CustomerController {
 
-    @GetMapping("/hello-world")
-    fun helloWorld(): ResponseEntity<*> {
-        return ok("Hello world")
+    @Autowired
+    private lateinit var ticketService: TicketService
+
+
+    @PostMapping("/events/{eventId}/ticket-categories/{ticketCategoryId}/buy-ticket")
+    fun buyTicket(@PathVariable eventId: String, @PathVariable ticketCategoryId: String): ResponseEntity<String> {
+        return ok(ticketService.buyTicket(eventId, ticketCategoryId))
     }
 }

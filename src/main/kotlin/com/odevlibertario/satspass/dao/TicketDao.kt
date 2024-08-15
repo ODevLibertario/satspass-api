@@ -1,9 +1,11 @@
 package com.odevlibertario.satspass.dao
 
 import com.odevlibertario.satspass.model.Currency
+import com.odevlibertario.satspass.model.Ticket
 import com.odevlibertario.satspass.model.TicketCategory
 import com.odevlibertario.satspass.model.UpsertTicketCategoryRequest
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
 import java.sql.Timestamp
@@ -111,6 +113,55 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
         )
     }
 
+    fun getCountForTickerCategory(tickerCategoryId: String): Int{
+        return jdbcTemplate.query("""
+            SELECT count(*) AS c FROM satspass.ticket
+            WHERE ticket_category_id = ?::uuid           
+        """, RowMapper { rs: ResultSet, _: Int -> rs.getInt("c")}, tickerCategoryId).first()
+    }
 
+    fun getTicketCategory(ticketCategoryId: String): TicketCategory {
+        return jdbcTemplate.query("""
+            SELECT id,
+                event_id,
+                category_name,
+                price,
+                currency,
+                quantity,
+                sales_start_date,
+                sales_end_date,
+                created_at,
+                updated_at
+                FROM satspass.ticket_category
+                WHERE id = ?::uuid  
+        """.trimIndent(), ticketCategoryRomMapper(), ticketCategoryId).first()
+    }
 
+    fun addTicket(ticket: Ticket) {
+        jdbcTemplate.update("""
+            INSERT INTO satspass.ticket(
+                id,
+                event_id,
+                ticket_category_id,
+                user_id,
+                qr_code,
+                status
+        ) VALUES (
+            ?::uuid,
+            ?::uuid,
+            ?::uuid,
+            ?::uuid,
+            ?,
+            ?:: satspass.ticket_status
+            )
+            """.trimIndent()
+        ){  ps ->
+            ps.setString(1, ticket.id)
+            ps.setString(2, ticket.eventId)
+            ps.setString(3, ticket.ticketCategoryId)
+            ps.setString(4, ticket.userId)
+            ps.setString(5, ticket.qrCode)
+            ps.setString(6,ticket.statusTicket.name)
+        }
+    }
 }

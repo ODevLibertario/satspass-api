@@ -65,6 +65,9 @@ class EventService(
          }
         eventDao.deleteEvent(eventId)
     }
+    fun getEvent(eventId: String): Event? {
+        return eventDao.getEvent(eventId)
+    }
 
 
 }

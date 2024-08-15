@@ -73,6 +73,22 @@ ADD CONSTRAINT fk_ticket_category_event
 FOREIGN KEY (event_id)
 REFERENCES satspass.event(id);
 
+--changeset odevlibertario:05-ticket-category-constraint
+CREATE TYPE satspass.ticket_status AS ENUM('RESERVED', 'PURCHASED', 'USED', 'REFUNDED');
+CREATE TABLE satspass.ticket(
+    id UUID PRIMARY KEY,
+    event_id UUID REFERENCES satspass.event(id),
+    ticket_category_id UUID REFERENCES satspass.ticket_category(id),
+    user_id UUID REFERENCES satspass.user(id),
+    qr_code TEXT,
+    status satspass.ticket_status,
+    payment_hash TEXT
+);
+
+
+
+
+
 
 
 

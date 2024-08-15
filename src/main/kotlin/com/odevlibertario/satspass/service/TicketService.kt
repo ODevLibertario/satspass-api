@@ -2,17 +2,16 @@ package com.odevlibertario.satspass.service
 
 import com.odevlibertario.satspass.dao.EventDao
 import com.odevlibertario.satspass.dao.TicketDao
-import com.odevlibertario.satspass.model.EventStatus
-import com.odevlibertario.satspass.model.TicketCategory
-import com.odevlibertario.satspass.model.UpsertEventRequest
-import com.odevlibertario.satspass.model.UpsertTicketCategoryRequest
+import com.odevlibertario.satspass.model.*
+import com.odevlibertario.satspass.util.getCurrentUser
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
 class TicketService(
     val ticketDao: TicketDao,
-    val eventService: EventService
+    val eventService: EventService,
+    val bitcoinService: BitcoinService
 ) {
     fun addTicketCategory(eventId: String, request: UpsertTicketCategoryRequest) {
         validateCategory(request)
@@ -63,6 +62,31 @@ class TicketService(
     fun deleteTicketCategory(eventId: String, ticketCategoryId: String) {
         validateEvent(eventId)
         ticketDao.deleteTicketCategory(ticketCategoryId)
+    }
+
+    fun buyTicket(eventId: String, ticketCategoryId: String): String {
+        val event = eventService.getEvent(eventId)
+        val currentUserId = getCurrentUser().id
+
+        if(event == null || event.eventStatus == EventStatus.DRAFT){
+            throw IllegalArgumentException ("O evento está inválido")
+        }
+        val ticketCategory = ticketDao.getTicketCategory(ticketCategoryId)
+        val count = ticketDao.getCountForTickerCategory(ticketCategoryId)
+        if (count < ticketCategory.quantity){
+            val invoice = bitcoinService.generateInvoice(ticketCategory.price)
+            ticketDao.addTicket(Ticket(
+                UUID.randomUUID().toString(),
+                eventId,
+                ticketCategoryId,
+                currentUserId,
+                null,
+                TicketStatus.RESERVED,
+                invoice.paymentHash))
+            return invoice.paymentRequest
+        }else{
+            throw IllegalArgumentException("Não há mais ingressos disponíveis para essa categoria")
+        }
     }
 
 

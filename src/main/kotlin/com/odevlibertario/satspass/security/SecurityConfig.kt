@@ -43,6 +43,7 @@ class SecurityConfig @Autowired constructor(
                 requests.requestMatchers(AntPathRequestMatcher("/customer/**")).hasAuthority("EVENT_CUSTOMER")
                 requests.requestMatchers(AntPathRequestMatcher("/manager/**")).hasAuthority("EVENT_MANAGER")
                 requests.requestMatchers(AntPathRequestMatcher("/admin/**")).hasAuthority("ADMIN")
+                requests.requestMatchers(AntPathRequestMatcher("/v3/**")).hasAuthority("ADMIN")
             }.with(JwtConfigurer(jwtTokenProvider), Customizer.withDefaults())
     }
 }
