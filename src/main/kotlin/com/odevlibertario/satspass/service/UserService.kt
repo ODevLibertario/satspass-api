@@ -1,18 +1,17 @@
 package com.odevlibertario.satspass.service
 
 import com.odevlibertario.satspass.dao.UserDao
-import com.odevlibertario.satspass.model.ResetPasswordRequest
-import com.odevlibertario.satspass.model.SignUpRequest
-import com.odevlibertario.satspass.model.UpdatePasswordRequest
-import com.odevlibertario.satspass.model.User
-import com.odevlibertario.satspass.model.UserRole
-import com.odevlibertario.satspass.model.UserStatus
-import com.odevlibertario.satspass.model.VerifyRequest
+import com.odevlibertario.satspass.model.*
 import com.odevlibertario.satspass.util.validateEmail
 import com.odevlibertario.satspass.util.validateNotEmpty
+import org.springframework.dao.DuplicateKeyException
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.client.HttpClientErrorException.BadRequest
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
 @Service
@@ -24,22 +23,26 @@ class UserService(
 
     @Transactional(rollbackFor = [Exception::class])
     fun signUp(request: SignUpRequest) {
-        request.email.validateNotEmpty().validateEmail()
-        request.password.validateNotEmpty()
+        try {
+            request.email.validateNotEmpty().validateEmail()
+            request.password.validateNotEmpty()
 
-        val id = UUID.randomUUID().toString()
+            val id = UUID.randomUUID().toString()
 
-        userDao.addUser(
-            User(
-                id,
-                request.email,
-                request.username,
-                passwordEncoder.encode(request.password),
-                UserStatus.PENDING_EMAIL_CONFIRMATION
+            userDao.addUser(
+                User(
+                    id,
+                    request.email,
+                    request.username,
+                    passwordEncoder.encode(request.password),
+                    UserStatus.PENDING_EMAIL_CONFIRMATION
+                )
             )
-        )
-        userDao.addRole(id, UserRole.EVENT_CUSTOMER)
-        emailService.sendSimpleEmail(request.email, "Satspass - Verificação de email", "Seu código para a verificação é: ${id.takeLast(4)}")
+            userDao.addRole(id, UserRole.EVENT_CUSTOMER)
+            emailService.sendSimpleEmail(request.email, "Satspass - Verificação de email", "Seu código para a verificação é: ${id.takeLast(4)}")
+        } catch (e: DuplicateKeyException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuário já existe")
+        }
     }
 
     fun verifyEmail(request: VerifyRequest) {
@@ -48,7 +51,7 @@ class UserService(
         if(verified) {
             userDao.updateUserStatus(userId!!, UserStatus.ACTIVE)
         } else {
-            throw IllegalArgumentException("Failed to verify email")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to verify email")
         }
     }
 
@@ -61,14 +64,19 @@ class UserService(
     }
 
     fun updatePassword(request: UpdatePasswordRequest) {
-        val user = userDao.getUser(request.email) ?: throw IllegalArgumentException("User not found")
+        val user = userDao.getUser(request.email) ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found")
 
         if(user.password != passwordEncoder.encode(request.oldPassword)) {
-            throw IllegalArgumentException("Incorrect current password")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect current password")
         }
 
         userDao.updateUserPassword(request.email, passwordEncoder.encode(request.newPassword))
     }
 
-
+    fun grantRole(request: GrantRoleRequest){
+        if(request.role == UserRole.ADMIN){
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é permitido adicionar o role ADMIN")
+        }
+        userDao.addRole(request.userId, request.role)
+    }
 }

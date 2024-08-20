@@ -4,7 +4,10 @@ import com.odevlibertario.satspass.dao.EventDao
 import com.odevlibertario.satspass.dao.TicketDao
 import com.odevlibertario.satspass.model.*
 import com.odevlibertario.satspass.util.getCurrentUser
+import org.apache.coyote.BadRequestException
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.util.UUID
 
@@ -31,17 +34,17 @@ class EventService(
 
     private fun validateEvent(request: UpsertEventRequest) {
         if (request.startDate < Instant.now()) {
-            throw IllegalArgumentException("A data de início do evento não pode ser no passado")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "A data de início do evento não pode ser no passado")
         }
         if (request.endDate < request.startDate) {
-            throw IllegalArgumentException("Data do fim do evento, não pode ser antes da data do começo do evento")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Data do fim do evento, não pode ser antes da data do começo do evento")
         }
     }
 
     fun isPublished(eventId: String): Boolean{
         val event = eventDao.getEvent(eventId)
         if(event == null){
-            throw IllegalArgumentException("O evento não existe")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "O evento não existe")
         }
         return event.eventStatus == EventStatus.PUBLISHED
     }
@@ -61,7 +64,7 @@ class EventService(
 
     fun deleteEvent(eventId: String) {
          if(isPublished(eventId)){
-             throw IllegalArgumentException("O evento publicado não pode ser deletado")
+             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "O evento publicado não pode ser deletado")
          }
         eventDao.deleteEvent(eventId)
     }

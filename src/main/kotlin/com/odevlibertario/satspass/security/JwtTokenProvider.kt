@@ -8,11 +8,13 @@ import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Component
+import org.springframework.web.server.ResponseStatusException
 import java.util.Date
 
 @Component
@@ -62,7 +64,7 @@ class JwtTokenProvider {
             val claims: Jws<Claims> = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secretKey.toByteArray())).build().parseSignedClaims(token)
             !claims.payload.expiration.before(Date())
         } catch (e: JwtException) {
-            throw BadCredentialsException("Expired or invalid JWT token")
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Expired or invalid JWT token")
         }
     }
 }

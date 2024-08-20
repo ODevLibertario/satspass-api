@@ -1,6 +1,7 @@
 package com.odevlibertario.satspass.security
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -15,7 +16,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @Configuration
 class SecurityConfig @Autowired constructor(
-    private val jwtTokenProvider: JwtTokenProvider
+    private val jwtTokenProvider: JwtTokenProvider,
+    @Value("\${satspass.api.key}") private val apiKey: String
 ) {
 
     @Bean
@@ -44,6 +46,6 @@ class SecurityConfig @Autowired constructor(
                 requests.requestMatchers(AntPathRequestMatcher("/manager/**")).hasAuthority("EVENT_MANAGER")
                 requests.requestMatchers(AntPathRequestMatcher("/admin/**")).hasAuthority("ADMIN")
                 requests.requestMatchers(AntPathRequestMatcher("/v3/**")).hasAuthority("ADMIN")
-            }.with(JwtConfigurer(jwtTokenProvider), Customizer.withDefaults())
+            }.with(SecurityFiltersConfigurer(jwtTokenProvider, apiKey), Customizer.withDefaults())
     }
 }

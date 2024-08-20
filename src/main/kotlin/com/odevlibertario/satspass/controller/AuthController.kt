@@ -6,7 +6,9 @@ import com.odevlibertario.satspass.model.SignUpRequest
 import com.odevlibertario.satspass.model.VerifyRequest
 import com.odevlibertario.satspass.security.JwtTokenProvider
 import com.odevlibertario.satspass.service.UserService
+import org.apache.coyote.BadRequestException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.authentication.AuthenticationManager
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/auth")
@@ -59,7 +62,7 @@ class AuthController {
             return ok(model)
         } catch (e: AuthenticationException) {
             println(e)
-            throw BadCredentialsException("Invalid username/password supplied")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid username/password supplied")
         }
     }
 }

@@ -4,7 +4,11 @@ import com.odevlibertario.satspass.dao.EventDao
 import com.odevlibertario.satspass.dao.TicketDao
 import com.odevlibertario.satspass.model.*
 import com.odevlibertario.satspass.util.getCurrentUser
+import org.apache.coyote.BadRequestException
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException.BadRequest
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
 @Service
@@ -32,13 +36,13 @@ class TicketService(
 
     private fun validateCategory(request: UpsertTicketCategoryRequest) {
         if (request.salesEndDate != null && request.salesEndDate < request.salesStartDate) {
-            throw IllegalArgumentException("A data de fim não pode ser menor que a data de ínicio das vendas")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "A data de fim não pode ser menor que a data de ínicio das vendas")
         }
         if (request.price < 0) {
-            throw IllegalArgumentException("O preço não pode ser menor do que 0")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "O preço não pode ser menor do que 0")
         }
         if(request.quantity < 0){
-            throw IllegalArgumentException("A quantidade não pode ser menor do que 0")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "A quantidade não pode ser menor do que 0")
         }
 
     }
@@ -46,7 +50,7 @@ class TicketService(
     private fun validateEvent(eventId: String) {
 
         if (eventService.isPublished(eventId)){
-            throw IllegalArgumentException("Não é possível adicionar categoria em um evento publicado")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível adicionar categoria em um evento publicado")
         }
     }
     fun getTicketCategories(eventId: String): List<TicketCategory> {
@@ -69,7 +73,7 @@ class TicketService(
         val currentUserId = getCurrentUser().id
 
         if(event == null || event.eventStatus == EventStatus.DRAFT){
-            throw IllegalArgumentException ("O evento está inválido")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "O evento está inválido")
         }
         val ticketCategory = ticketDao.getTicketCategory(ticketCategoryId)
         val count = ticketDao.getCountForTickerCategory(ticketCategoryId)
@@ -85,7 +89,7 @@ class TicketService(
                 invoice.paymentHash))
             return invoice.paymentRequest
         }else{
-            throw IllegalArgumentException("Não há mais ingressos disponíveis para essa categoria")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Não há mais ingressos disponíveis para essa categoria")
         }
     }
 

@@ -2,10 +2,13 @@ package com.odevlibertario.satspass.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.odevlibertario.satspass.model.BitcoinInvoice
+import org.apache.coyote.BadRequestException
 
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpHeaders
@@ -44,7 +47,7 @@ class BitcoinService {
             val invoiceJson = objectMapper.readTree(response.body())
             return BitcoinInvoice(invoiceJson["payment_hash"].asText(), invoiceJson["payment_request"].asText())
         }else{
-            throw IllegalArgumentException("Erro ao gerar invoice")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Erro ao gerar invoice")
         }
     }
 }
