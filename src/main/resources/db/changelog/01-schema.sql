@@ -1,6 +1,6 @@
 --liquibase formatted sql
 
---changeset odevlibertario:00-user
+--changeset odevlibertario:00-initial-schema
 CREATE SCHEMA satspass;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA satspass;
@@ -30,69 +30,48 @@ CREATE TABLE satspass.user_role (
 
 CREATE INDEX idx_user_role ON satspass.user_role (user_id);
 
---changeset odevlibertario:01-event
 CREATE TYPE satspass.event_status AS ENUM ('DRAFT', 'PUBLISHED');
 CREATE TABLE satspass.event (
     id uuid PRIMARY KEY,
-    name TEXT,
+    manager_id UUID REFERENCES satspass.user(id) NOT NULL,
+    name TEXT NOT NULL,
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
     end_date TIMESTAMP WITH TIME ZONE NOT NULL,
     publicity_image_url TEXT NULL,
-    status satspass.event_status,
+    status satspass.event_status NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
---changeset odevlibertario:02-event-manager-id
-ALTER TABLE satspass.event
-ADD COLUMN manager_id UUID NOT NULL;
-
-ALTER TABLE satspass.event
-ADD CONSTRAINT fk_user
-FOREIGN KEY (manager_id)
-REFERENCES satspass.user(id);
-
---changeset odevlibertario:03-ticket-category
 CREATE TABLE satspass.ticket_category(
     id UUID PRIMARY KEY,
-    event_id UUID,
-    category_name TEXT,
-    price INT,
+    event_id UUID REFERENCES satspass.event(id) NOT NULL,
+    category_name TEXT NOT NULL,
+    price INT NOT NULL,
     currency TEXT,
-    quantity INT,
-    sales_start_date TIMESTAMP WITH TIME ZONE,
+    quantity INT NOT NULL,
+    sales_start_date TIMESTAMP WITH TIME ZONE NOT NULL,
     sales_end_date TIMESTAMP WITH TIME ZONE NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT unique_columns UNIQUE (event_id, category_name)
 );
 
---changeset odevlibertario:04-ticket-category-constraint
-ALTER TABLE satspass.ticket_category
-ADD CONSTRAINT fk_ticket_category_event
-FOREIGN KEY (event_id)
-REFERENCES satspass.event(id);
-
---changeset odevlibertario:05-ticket-category-constraint
 CREATE TYPE satspass.ticket_status AS ENUM('RESERVED', 'PURCHASED', 'USED', 'REFUNDED');
+
 CREATE TABLE satspass.ticket(
     id UUID PRIMARY KEY,
-    event_id UUID REFERENCES satspass.event(id),
-    ticket_category_id UUID REFERENCES satspass.ticket_category(id),
-    user_id UUID REFERENCES satspass.user(id),
-    qr_code TEXT,
-    status satspass.ticket_status,
-    payment_hash TEXT
+    event_id UUID REFERENCES satspass.event(id) NOT NULL,
+    ticket_category_id UUID REFERENCES satspass.ticket_category(id) NOT NULL,
+    user_id UUID REFERENCES satspass.user(id) NOT NULL,
+    qr_code TEXT NULL,
+    status satspass.ticket_status NOT NULL,
+    payment_hash TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
---changeset odevlibertario:06-ticket-timestamo
-ALTER TABLE satspass.ticket
-ADD COLUMN created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW();
 
---changeset odevlibertario:07-NOT-NULL
-ALTER TABLE satspass.ticket
-ALTER COLUMN payment_hash SET NOT NULL;
 
 
 

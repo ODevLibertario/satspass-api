@@ -171,7 +171,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             ps.setString(3, ticket.ticketCategoryId)
             ps.setString(4, ticket.userId)
             ps.setString(5, ticket.qrCode)
-            ps.setString(6, ticket.statusTicket.name)
+            ps.setString(6, ticket.ticketStatus.name)
             ps.setString(7, ticket.paymentHash)
         }
     }
@@ -206,5 +206,35 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             rs.getTimestamp("created_at").toInstant(),
             rs.getTimestamp("updated_at").toInstant(),
         )
+    }
+
+    fun getTicket(ticketId: String): Ticket? {
+        return jdbcTemplate.query(
+            """
+            SELECT id,
+                event_id,
+                ticket_category_id,
+                user_id,
+                qr_code,
+                status,
+                payment_hash,
+                created_at,
+                updated_at
+                FROM satspass.ticket
+                WHERE id = ?::uuid
+                """.trimIndent(), ticketRomMapper(), ticketId
+        ).firstOrNull()
+    }
+
+    fun updateTicket(ticketId: String, status: TicketStatus) {
+        jdbcTemplate.update("""
+            UPDATE satspass.ticket
+            SET status = ?::satspass.ticket_status
+            WHERE id = ?::uuid
+            """.trimIndent(), status.name, ticketId)
+    }
+
+    fun lockTable(tableName: String, lockMode: String){
+        jdbcTemplate.execute("LOCK TABLE $tableName IN $lockMode MODE")
     }
 }

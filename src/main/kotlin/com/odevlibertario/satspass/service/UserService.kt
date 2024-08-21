@@ -16,9 +16,10 @@ import java.util.UUID
 
 @Service
 class UserService(
-    val passwordEncoder: PasswordEncoder,
-    val userDao: UserDao,
-    val emailService: EmailService
+   private val passwordEncoder: PasswordEncoder,
+   private val userDao: UserDao,
+   private val emailService: EmailService,
+   private val userCache: UserCache
 ) {
 
     @Transactional(rollbackFor = [Exception::class])
@@ -78,5 +79,6 @@ class UserService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é permitido adicionar o role ADMIN")
         }
         userDao.addRole(request.userId, request.role)
+        userDao.getUserById(request.userId)?.let { userCache.invalidate(it.email) }
     }
 }

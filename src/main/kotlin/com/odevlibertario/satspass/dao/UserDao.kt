@@ -58,6 +58,11 @@ class UserDao(val jdbcTemplate: JdbcTemplate) {
             userRowMapper(), email).firstOrNull()
     }
 
+    fun getUserById(userId: String): User? {
+        return jdbcTemplate.query("SELECT id, email, username, password_hash, status, created_at, updated_at FROM satspass.user WHERE id = ?::uuid",
+            userRowMapper(), userId).firstOrNull()
+    }
+
     private fun userRowMapper() = { rs: ResultSet, _: Int ->
         User(
             rs.getString("id"),

@@ -1,13 +1,11 @@
 package com.odevlibertario.satspass.service
 
-import com.odevlibertario.satspass.dao.EventDao
 import com.odevlibertario.satspass.dao.TicketDao
 import com.odevlibertario.satspass.model.*
 import com.odevlibertario.satspass.util.getCurrentUser
-import org.apache.coyote.BadRequestException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException.BadRequest
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
@@ -68,6 +66,7 @@ class TicketService(
         ticketDao.deleteTicketCategory(ticketCategoryId)
     }
 
+    @Transactional
     fun buyTicket(eventId: String, ticketCategoryId: String): String {
         val event = eventService.getEvent(eventId)
         val currentUserId = getCurrentUser().id
@@ -76,6 +75,7 @@ class TicketService(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "O evento está inválido")
         }
         val ticketCategory = ticketDao.getTicketCategory(ticketCategoryId)
+        ticketDao.lockTable("satspass.ticket", "ACCESS EXCLUSIVE")
         val count = ticketDao.getCountForTickerCategory(ticketCategoryId)
         if (count < ticketCategory.quantity){
             val invoice = bitcoinService.generateInvoice(ticketCategory.price)
@@ -97,5 +97,12 @@ class TicketService(
         return ticketDao.getTickets(userId)
     }
 
-
+    fun validateQrCode(ticketId: String, request: ValidateQrCodeRequest): Boolean {
+       val ticket = ticketDao.getTicket(ticketId)
+        val result = ticket != null && ticket.ticketStatus == TicketStatus.PURCHASED && ticket.qrCode == request.qrCode
+        if(result){
+            ticketDao.updateTicket(ticketId, TicketStatus.USED)
+        }
+        return result
+    }
 }

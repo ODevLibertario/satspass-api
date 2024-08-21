@@ -2,6 +2,7 @@ package com.odevlibertario.satspass.controller
 
 import com.odevlibertario.satspass.model.UpsertEventRequest
 import com.odevlibertario.satspass.model.UpsertTicketCategoryRequest
+import com.odevlibertario.satspass.model.ValidateQrCodeRequest
 import com.odevlibertario.satspass.service.EventService
 import com.odevlibertario.satspass.service.TicketService
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,5 +65,10 @@ class ManagerController {
     fun deleteEvent(@PathVariable eventId: String) : ResponseEntity<*> {
         eventService.deleteEvent(eventId)
         return ok(null)
+    }
+
+    @PostMapping("/tickets/{ticketId}/validate-qrcode")
+    fun validateQrcode(@PathVariable ticketId: String, @RequestBody validateQrCodeRequest: ValidateQrCodeRequest): Boolean{
+        return ticketService.validateQrCode(ticketId, validateQrCodeRequest)
     }
 }

@@ -6,7 +6,9 @@ import com.odevlibertario.satspass.service.BitcoinService
 import com.odevlibertario.satspass.service.EventService
 import com.odevlibertario.satspass.service.TicketService
 import com.odevlibertario.satspass.service.UserService
+import jakarta.websocket.server.PathParam
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.annotation.Id
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.authentication.AuthenticationManager
@@ -41,4 +43,7 @@ class CustomerController {
     fun getTickets(@PathVariable userId: String): ResponseEntity<List<Ticket>> {
         return ok(ticketService.getTicket(userId))
     }
+
+
+
 }

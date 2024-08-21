@@ -11,15 +11,14 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserDetailsService(
-    val userDao: UserDao
+    val userCache: UserCache
 ) : UserDetailsService {
 
-    //Add cache here
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(email: String): UserDetails {
-        val user = userDao.getUser(email) ?: throw UsernameNotFoundException("User not found")
-
-        val roles = userDao.getRoles(user.id)
+        val userAndRoles = userCache.getUserAndRoles(email)
+        val user = userAndRoles.first
+        val roles = userAndRoles.second
 
         return SatspassUserDetails(user.id, user.email, user.password, roles.map { role -> SimpleGrantedAuthority(role) }.toMutableList())
     }
