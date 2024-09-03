@@ -11,9 +11,10 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 import java.net.http.HttpClient
-import java.net.http.HttpHeaders
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+
+val objectMapper: ObjectMapper = ObjectMapper()
 
 @Service
 class BitcoinService {
@@ -23,8 +24,6 @@ class BitcoinService {
 
     @Value("\${bitcoin.invoice.api-key}")
     private lateinit var bitcoinInvoiceApiKey: String
-
-    private val objectMapper: ObjectMapper = ObjectMapper()
 
     private val httpClient = HttpClient.newHttpClient()
 
