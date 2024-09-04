@@ -14,17 +14,17 @@ class UserCache (
 ){
     private val cache: Cache<String, Pair<User, List<String>>> = Caffeine.newBuilder()
         .expireAfterWrite(10, TimeUnit.MINUTES)
-        .build({email->
-            val user = userDao.getUser(email) ?: throw UsernameNotFoundException("User not found")
-            val roles = userDao.getRoles(user.id)
-            Pair(user, roles)
-        })
+        .build()
 
     fun invalidate(email: String){
         cache.invalidate(email)
     }
 
     fun getUserAndRoles(email: String): Pair<User, List<String>>{
-        return cache.getIfPresent(email)!!
+        return cache.get(email, {key ->
+            val user = userDao.getUser(key) ?: throw UsernameNotFoundException("User not found")
+            val roles = userDao.getRoles(user.id)
+            Pair(user, roles)
+        } )!!
     }
 }

@@ -1,18 +1,13 @@
 package com.odevlibertario.satspass.controller
 
-import com.odevlibertario.satspass.model.ResetPasswordRequest
-import com.odevlibertario.satspass.model.SignInRequest
-import com.odevlibertario.satspass.model.SignUpRequest
-import com.odevlibertario.satspass.model.VerifyRequest
+import com.odevlibertario.satspass.model.*
 import com.odevlibertario.satspass.security.JwtTokenProvider
 import com.odevlibertario.satspass.service.UserService
-import org.apache.coyote.BadRequestException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.annotation.PostMapping
@@ -55,10 +50,13 @@ class AuthController {
     fun signIn(@RequestBody data: SignInRequest): ResponseEntity<*> {
         try {
             val email: String = data.email
-            authenticationManager!!.authenticate(UsernamePasswordAuthenticationToken(email, data.password))
+            val auth = authenticationManager!!.authenticate(UsernamePasswordAuthenticationToken(email, data.password))
             val token = jwtTokenProvider!!.createToken(email)
+            val roles = auth.authorities.map { it.authority }
+
             val model: MutableMap<Any, Any> = HashMap()
             model["token"] = token
+            model["role"] = roles.firstOrNull { it == UserRole.ADMIN.name } ?: roles.firstOrNull { it == UserRole.EVENT_MANAGER.name } ?: UserRole.EVENT_CUSTOMER
             return ok(model)
         } catch (e: AuthenticationException) {
             println(e)
