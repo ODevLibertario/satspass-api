@@ -80,8 +80,8 @@ class UserDao(val jdbcTemplate: JdbcTemplate) {
         jdbcTemplate.update("UPDATE satspass.user SET status = ?::satspass.user_status, updated_at = now() WHERE id = ?::uuid", userStatus.name, id)
     }
 
-    fun updateUserPassword(email: String, password: String) {
-        jdbcTemplate.update("UPDATE satspass.user SET password = ?, updated_at = now() WHERE email = ?", password, email)
+    fun updateUserPassword(email: String, passwordHash: String) {
+        jdbcTemplate.update("UPDATE satspass.user SET password_hash = ?, updated_at = now() WHERE email = ?", passwordHash, email)
     }
 
     fun getRoles(userId: String): List<String> {
