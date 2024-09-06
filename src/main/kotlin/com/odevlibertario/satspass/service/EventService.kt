@@ -26,6 +26,9 @@ class EventService(
             name = request.name,
             startDate = request.startDate,
             endDate = request.endDate,
+            startTime = request.startTime,
+            endTime = request.endTime,
+            location = request.location,
             publicityImageUrl = request.publicityImageUrl,
             EventStatus.DRAFT
         )

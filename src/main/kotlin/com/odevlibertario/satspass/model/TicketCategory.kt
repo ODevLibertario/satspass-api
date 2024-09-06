@@ -10,7 +10,7 @@ data class TicketCategory (
     val price: Int,
     val currency: Currency,
     val quantity: Int,
-    val salesStarDate : Instant,
+    val salesStartDate : Instant,
     val salesEndDate : Instant? = null,
     val createdAt: Instant? = null,
     val updatedAt: Instant? = null

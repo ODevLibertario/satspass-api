@@ -42,7 +42,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             ps.setInt(4, ticketCategory.price)
             ps.setObject(5, ticketCategory.currency.name)
             ps.setInt(6, ticketCategory.quantity)
-            ps.setObject(7, Timestamp.from(ticketCategory.salesStarDate), Types.TIMESTAMP)
+            ps.setObject(7, Timestamp.from(ticketCategory.salesStartDate), Types.TIMESTAMP)
             ps.setObject(8, Timestamp.from(ticketCategory.salesEndDate), Types.TIMESTAMP)
         }
     }

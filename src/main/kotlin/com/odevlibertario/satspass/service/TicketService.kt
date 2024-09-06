@@ -26,7 +26,7 @@ class TicketService(
                 price = request.price,
                 currency = request.currency,
                 quantity = request.quantity,
-                salesStarDate = request.salesStartDate,
+                salesStartDate = request.salesStartDate,
                 salesEndDate = request.salesEndDate
             )
         )
