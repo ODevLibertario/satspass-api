@@ -39,6 +39,7 @@ CREATE TABLE satspass.event (
     end_date TIMESTAMP WITH TIME ZONE NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    description TEXT NULL,
     location TEXT NULL,
     publicity_image_url TEXT NULL,
     status satspass.event_status NOT NULL,

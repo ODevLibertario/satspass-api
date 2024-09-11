@@ -10,6 +10,7 @@ data class Event(
     val endDate: Instant,
     val startTime: Instant,
     val endTime: Instant,
+    val description: String?,
     val location: String?,
     val publicityImageUrl: String?,
     val eventStatus: EventStatus,

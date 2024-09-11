@@ -21,12 +21,14 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
                 end_date,
                 start_time,
                 end_time,
+                description,
                 location,
                 publicity_image_url,
                 status
             ) VALUES (
                 ?::uuid,
                 ?::uuid,
+                ?,
                 ?,
                 ?,
                 ?,
@@ -45,9 +47,10 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
             ps.setObject(5, Timestamp.from(event.endDate), Types.TIMESTAMP)
             ps.setObject(6, Timestamp.from(event.startTime), Types.TIMESTAMP)
             ps.setObject(7, Timestamp.from(event.endTime), Types.TIMESTAMP)
-            ps.setString(8, event.location)
-            ps.setString(9, event.publicityImageUrl)
-            ps.setString(10, event.eventStatus.name)
+            ps.setString(8, event.description)
+            ps.setString(9, event.location)
+            ps.setString(10, event.publicityImageUrl)
+            ps.setString(11, event.eventStatus.name)
         }
     }
 
@@ -57,6 +60,8 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
             SET name = ?,
                 start_date = ?,
                 end_date = ?,
+                description = ?,
+                location = ?,
                 publicity_image_url = ?
             WHERE id = ?::uuid
             
@@ -65,8 +70,10 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
             ps.setString(1, request.name)
             ps.setObject(2, Timestamp.from(request.startDate), Types.TIMESTAMP)
             ps.setObject(3, Timestamp.from(request.endDate), Types.TIMESTAMP)
-            ps.setString(4, request.publicityImageUrl)
-            ps.setString(5, eventId)
+            ps.setString(4, request.description)
+            ps.setString(5, request.location.toString())
+            ps.setString(6, request.publicityImageUrl)
+            ps.setString(7, eventId)
         }
 
     }
@@ -93,6 +100,7 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
                 end_date, 
                 start_time, 
                 end_time,
+                description,
                 location,
                 publicity_image_url, 
                 status,
@@ -111,6 +119,7 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
             rs.getTimestamp("end_date").toInstant(),
             rs.getTimestamp("start_time").toInstant(),
             rs.getTimestamp("end_time").toInstant(),
+            rs.getString("description"),
             rs.getString("location"),
             rs.getString("publicity_image_url"),
             EventStatus.valueOf(rs.getString("status")),
@@ -125,6 +134,8 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
                 name, 
                 start_date, 
                 end_date, 
+                description,
+                location,
                 publicity_image_url, 
                 status,
                 created_at,
@@ -150,6 +161,7 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
                 end_date,
                 start_time, 
                 end_time,
+                description,
                 location,
                 publicity_image_url, 
                 status,
