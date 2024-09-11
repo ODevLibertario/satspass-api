@@ -9,6 +9,4 @@ data class UpsertEventRequest(val name: String,
                               val endTime: Instant,
                               val description: String?,
                               val location: String?,
-                              val publicityImageUrl: String?) {
-
-}
+                              val publicityImageUrl: String?)

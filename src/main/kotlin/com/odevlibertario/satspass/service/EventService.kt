@@ -13,25 +13,25 @@ import java.util.UUID
 
 @Service
 class EventService(
-    val eventDao: EventDao,
-    private val ticketDao: TicketDao
+    val eventDao: EventDao
 ) {
     fun addEvent(request: UpsertEventRequest) {
         validateEvent(request)
 
         eventDao.addEvent(
             Event(
-            id = UUID.randomUUID().toString(),
-            managerId = getCurrentUser().id,
-            name = request.name,
-            startDate = request.startDate,
-            endDate = request.endDate,
-            startTime = request.startTime,
-            endTime = request.endTime,
-            location = request.location,
-            publicityImageUrl = request.publicityImageUrl,
-            EventStatus.DRAFT
-        )
+                id = UUID.randomUUID().toString(),
+                managerId = getCurrentUser().id,
+                name = request.name,
+                startDate = request.startDate,
+                endDate = request.endDate,
+                startTime = request.startTime,
+                endTime = request.endTime,
+                description = request.description,
+                location = request.location,
+                publicityImageUrl = request.publicityImageUrl,
+                EventStatus.DRAFT
+            )
         )
     }
 
