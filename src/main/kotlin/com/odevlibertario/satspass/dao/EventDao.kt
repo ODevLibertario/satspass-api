@@ -134,6 +134,8 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
                 name, 
                 start_date, 
                 end_date, 
+                start_time,
+                end_time,
                 description,
                 location,
                 publicity_image_url, 

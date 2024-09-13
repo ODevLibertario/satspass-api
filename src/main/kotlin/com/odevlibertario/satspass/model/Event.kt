@@ -15,5 +15,6 @@ data class Event(
     val publicityImageUrl: String?,
     val eventStatus: EventStatus,
     val createdAt: Instant? = null,
-    val updatedAt: Instant? = null
+    val updatedAt: Instant? = null,
+    val ticketCategories: List<TicketCategory>? = null,
 )

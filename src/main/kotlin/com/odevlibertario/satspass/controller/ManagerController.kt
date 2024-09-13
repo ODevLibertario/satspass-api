@@ -21,8 +21,8 @@ class ManagerController {
 
     @PostMapping("/events")
     fun addEvent(@RequestBody request: UpsertEventRequest): ResponseEntity<*> {
-        eventService.addEvent(request)
-        return ok(null)
+        val eventId = eventService.addEvent(request)
+        return ok(mapOf("eventId" to eventId))
     }
 
     @PutMapping("/events/{eventId}")
@@ -40,6 +40,11 @@ class ManagerController {
     @GetMapping("/events")
     fun getEventsFromCurrentUser() : ResponseEntity<*> {
         return ok(eventService.getEventsFromCurrentUser())
+    }
+
+    @GetMapping("/events/{eventId}")
+    fun getEvent(@PathVariable eventId: String) : ResponseEntity<*> {
+        return ok(eventService.getEventWithTicketCategories(eventId))
     }
 
     @PostMapping("events/{eventId}/ticket-categories")

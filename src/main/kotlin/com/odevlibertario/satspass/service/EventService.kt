@@ -13,14 +13,16 @@ import java.util.UUID
 
 @Service
 class EventService(
-    val eventDao: EventDao
+    val eventDao: EventDao,
+    val ticketDao: TicketDao
 ) {
-    fun addEvent(request: UpsertEventRequest) {
+    fun addEvent(request: UpsertEventRequest): String {
+        val eventId = UUID.randomUUID().toString()
         validateEvent(request)
 
         eventDao.addEvent(
             Event(
-                id = UUID.randomUUID().toString(),
+                id = eventId,
                 managerId = getCurrentUser().id,
                 name = request.name,
                 startDate = request.startDate,
@@ -33,6 +35,8 @@ class EventService(
                 EventStatus.DRAFT
             )
         )
+
+        return eventId
     }
 
     private fun validateEvent(request: UpsertEventRequest) {
@@ -73,6 +77,11 @@ class EventService(
     }
     fun getEvent(eventId: String): Event? {
         return eventDao.getEvent(eventId)
+    }
+
+    fun getEventWithTicketCategories(eventId: String): Event? {
+        val event = eventDao.getEvent(eventId) ?: return null
+        return event.copy(ticketCategories = ticketDao.getTicketCategories(eventId))
     }
 
     fun getPublishedEvents(): List<Event> {
