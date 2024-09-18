@@ -62,11 +62,11 @@ class EventService(
 
     fun publishEvent(eventId: String) {
         eventDao.publishEvent(eventId)
-
     }
 
     fun getEventsFromCurrentUser(): List<Event> {
-       return eventDao.getEvents(getCurrentUser().id)
+       val events =  eventDao.getEvents(getCurrentUser().id)
+       return events.map { event -> event.copy(ticketCategories = ticketDao.getTicketCategories(event.id)) }
     }
 
     fun deleteEvent(eventId: String) {
