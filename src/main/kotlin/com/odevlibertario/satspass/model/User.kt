@@ -8,6 +8,7 @@ data class User(
     val username: String?,
     val password: String,
     val userStatus: UserStatus,
+    val lightningAddress: String? = null,
     val createdAt: Instant? = null,
     val updatedAt: Instant? = null
 )

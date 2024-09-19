@@ -75,12 +75,5 @@ CREATE TABLE satspass.ticket(
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-
-
-
-
-
-
-
-
-
+--changeset odevlibertario:01-lightning-address
+ALTER TABLE satspass.user ADD COLUMN lightning_address TEXT;

@@ -4,10 +4,8 @@ import com.odevlibertario.satspass.model.User
 import com.odevlibertario.satspass.model.UserRole
 import com.odevlibertario.satspass.model.UserStatus
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
-import java.util.UUID
 
 @Repository
 class UserDao(val jdbcTemplate: JdbcTemplate) {
@@ -54,12 +52,12 @@ class UserDao(val jdbcTemplate: JdbcTemplate) {
     }
 
     fun getUser(email: String): User? {
-        return jdbcTemplate.query("SELECT id, email, username, password_hash, status, created_at, updated_at FROM satspass.user WHERE email = ?",
+        return jdbcTemplate.query("SELECT id, email, username, password_hash, status, lightning_address, created_at, updated_at FROM satspass.user WHERE email = ?",
             userRowMapper(), email).firstOrNull()
     }
 
     fun getUserById(userId: String): User? {
-        return jdbcTemplate.query("SELECT id, email, username, password_hash, status, created_at, updated_at FROM satspass.user WHERE id = ?::uuid",
+        return jdbcTemplate.query("SELECT id, email, username, password_hash, status, lightning_address, created_at, updated_at FROM satspass.user WHERE id = ?::uuid",
             userRowMapper(), userId).firstOrNull()
     }
 
@@ -70,6 +68,7 @@ class UserDao(val jdbcTemplate: JdbcTemplate) {
             rs.getString("username"),
             rs.getString("password_hash"),
             UserStatus.valueOf(rs.getString("status")),
+            rs.getString("lightning_address"),
             rs.getTimestamp("created_at").toInstant(),
             rs.getTimestamp("updated_at").toInstant(),
         )
@@ -92,6 +91,7 @@ class UserDao(val jdbcTemplate: JdbcTemplate) {
 
     }
 
-
-
+    fun updateLightningAddress(userId: String, lightningAddress: String) {
+        jdbcTemplate.update("UPDATE satspass.user SET lightning_address = ?, updated_at = now() WHERE id = ?::uuid", lightningAddress, userId)
+    }
 }

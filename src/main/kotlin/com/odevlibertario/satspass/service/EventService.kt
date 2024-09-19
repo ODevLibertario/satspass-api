@@ -61,6 +61,12 @@ class EventService(
     }
 
     fun publishEvent(eventId: String) {
+        val event = getEventWithTicketCategories(eventId)
+
+        if(event == null || event.eventStatus == EventStatus.PUBLISHED || event.ticketCategories.isNullOrEmpty()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "O evento já publicado ou sem categorias não pode ser publicado")
+        }
+
         eventDao.publishEvent(eventId)
     }
 

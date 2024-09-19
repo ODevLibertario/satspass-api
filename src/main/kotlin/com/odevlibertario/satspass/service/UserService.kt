@@ -2,15 +2,14 @@ package com.odevlibertario.satspass.service
 
 import com.odevlibertario.satspass.dao.UserDao
 import com.odevlibertario.satspass.model.*
+import com.odevlibertario.satspass.util.getCurrentUser
 import com.odevlibertario.satspass.util.validateEmail
 import com.odevlibertario.satspass.util.validateNotEmpty
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.HttpClientErrorException.BadRequest
 import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
@@ -80,5 +79,24 @@ class UserService(
         }
         userDao.addRole(request.userId, request.role)
         userDao.getUserById(request.userId)?.let { userCache.invalidate(it.email) }
+    }
+
+    fun updateLightningAddress(request: UpdateLightningAddressRequest) {
+        val user = getCurrentUser()
+        if(user.isCredentialsNonExpired) {
+            userDao.updateLightningAddress(user.id, request.lightningAddress)
+        } else {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "")
+        }
+    }
+
+    fun getUser(): User? {
+        val user = getCurrentUser()
+        if(user.isCredentialsNonExpired) {
+            return userDao.getUserById(user.id)?.copy(password = "")
+        } else {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "")
+        }
+
     }
 }
