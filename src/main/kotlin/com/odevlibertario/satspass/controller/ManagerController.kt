@@ -47,6 +47,11 @@ class ManagerController {
         return ok(eventService.getEventWithTicketCategories(eventId))
     }
 
+    @GetMapping("/events/{eventId}/statistics")
+    fun getEventStatistics(@PathVariable eventId: String) : ResponseEntity<*> {
+        return ok(eventService.getEventStatistics(eventId))
+    }
+
     @PostMapping("events/{eventId}/ticket-categories")
     fun addTicketCategory(@PathVariable eventId: String, @RequestBody request: UpsertTicketCategoryRequest): ResponseEntity<*> {
         ticketService.addTicketCategory(eventId, request)

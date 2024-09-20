@@ -2,6 +2,7 @@ package com.odevlibertario.satspass.dao
 
 import com.odevlibertario.satspass.model.Event
 import com.odevlibertario.satspass.model.EventStatus
+import com.odevlibertario.satspass.model.TicketStatistics
 import com.odevlibertario.satspass.model.UpsertEventRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
@@ -170,9 +171,30 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
                 created_at,
                 updated_at
                 FROM satspass.event
-                Where status = ?:: satspass.event_status 
+                Where status = ?::satspass.event_status 
             """.trimIndent(), eventRowMapper(), EventStatus.PUBLISHED.name
         )
+    }
+
+    fun getEventStatistics(eventId: String): List<TicketStatistics> {
+        return jdbcTemplate.query("""
+            select 
+             c.category_name,
+             c.quantity,
+             c.price,
+             count(*) as count,
+             sum(c.price) as total
+             from satspass.ticket_category c inner join satspass.ticket t on c.id = t.ticket_category_id
+             where t.status not in ('REFUNDED', 'RESERVED') and t.event_id = ? group by  c.category_name, c.quantity, c.price;
+        """.trimIndent(), {rs: ResultSet, _: Int ->
+            TicketStatistics(
+                rs.getString("category_name"),
+                rs.getInt("quantity"),
+                rs.getInt("price"),
+                rs.getInt("count"),
+                rs.getInt("total")
+            )
+        }, eventId)
     }
 
 

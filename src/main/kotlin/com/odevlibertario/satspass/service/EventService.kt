@@ -94,4 +94,8 @@ class EventService(
         return eventDao.getPublishedEvents()
     }
 
+    fun getEventStatistics(eventId: String): List<TicketStatistics> {
+        return eventDao.getEventStatistics(eventId)
+    }
+
 }
