@@ -66,7 +66,7 @@ class UserService(
     fun updatePassword(request: UpdatePasswordRequest) {
         val user = userDao.getUser(request.email) ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found")
 
-        if(user.password != passwordEncoder.encode(request.oldPassword)) {
+        if(!this.passwordEncoder.matches(request.oldPassword, user.password)) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect current password")
         }
 
