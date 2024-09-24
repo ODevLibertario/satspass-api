@@ -91,7 +91,7 @@ class EventService(
     }
 
     fun getPublishedEvents(): List<Event> {
-        return eventDao.getPublishedEvents()
+        return eventDao.getPublishedEvents().map { event -> event.copy(ticketCategories = ticketDao.getTicketCategories(event.id)) }
     }
 
     fun getEventStatistics(eventId: String): List<TicketStatistics> {

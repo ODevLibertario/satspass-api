@@ -67,29 +67,47 @@ class TicketService(
     }
 
     @Transactional
-    fun buyTicket(eventId: String, ticketCategoryId: String): String {
+    fun buyTickets(eventId: String, selectedTickets: List<SelectedTicket>): String {
         val event = eventService.getEvent(eventId)
         val currentUserId = getCurrentUser().id
 
         if(event == null || event.eventStatus == EventStatus.DRAFT){
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "O evento está inválido")
         }
-        val ticketCategory = ticketDao.getTicketCategory(ticketCategoryId)
+
+        val ticketCategories = selectedTickets.map { Pair(ticketDao.getTicketCategory(it.ticketCategoryId), it) }
+
         ticketDao.lockTable("satspass.ticket", "ACCESS EXCLUSIVE")
-        val count = ticketDao.getCountForTickerCategory(ticketCategoryId)
-        if (count < ticketCategory.quantity){
-            val invoice = bitcoinService.generateInvoice(ticketCategory.price)
-            ticketDao.addTicket(Ticket(
-                UUID.randomUUID().toString(),
-                eventId,
-                ticketCategoryId,
-                currentUserId,
-                null,
-                TicketStatus.RESERVED,
-                invoice.paymentHash))
-            return invoice.paymentRequest
-        }else{
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Não há mais ingressos disponíveis para essa categoria")
+        val totalPrice = ticketCategories.map {
+            validateTicketAvailability(it.first, it.second)
+            it
+        }.sumOf { it.first.price * it.second.count }
+
+        val invoice = bitcoinService.generateInvoice(totalPrice)
+
+        selectedTickets.forEach {
+            (1..it.count).forEach { _ ->
+                ticketDao.addTicket(Ticket(
+                    UUID.randomUUID().toString(),
+                    eventId,
+                    it.ticketCategoryId,
+                    currentUserId,
+                    null,
+                    TicketStatus.RESERVED,
+                    invoice.paymentHash))
+            }
+        }
+
+        return invoice.paymentRequest
+    }
+
+    private fun validateTicketAvailability(ticketCategory: TicketCategory, selectedTicket: SelectedTicket) {
+        val dbCount = ticketDao.getCountForTickerCategory(ticketCategory.id)
+        if (ticketCategory.quantity < (selectedTicket.count + dbCount)) {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Não há mais ingressos disponíveis para essa categoria"
+            )
         }
     }
 
