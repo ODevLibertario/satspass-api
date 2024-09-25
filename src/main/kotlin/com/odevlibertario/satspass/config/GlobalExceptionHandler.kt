@@ -7,12 +7,18 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.server.ResponseStatusException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @ControllerAdvice
 class GlobalExceptionHandler {
 
+    private val logger: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+
     @ExceptionHandler(Exception::class)
     fun handleAllExceptions(ex: Exception, request: WebRequest): ResponseEntity<String> {
+        logger.error(ex.message, ex)
+
         val errorMessage = objectMapper.createObjectNode()
 
         if(ex is ResponseStatusException) {

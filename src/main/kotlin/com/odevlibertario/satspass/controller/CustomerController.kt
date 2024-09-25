@@ -2,7 +2,7 @@ package com.odevlibertario.satspass.controller
 
 import com.odevlibertario.satspass.model.Event
 import com.odevlibertario.satspass.model.SelectedTicket
-import com.odevlibertario.satspass.model.Ticket
+import com.odevlibertario.satspass.model.TicketAndEvent
 import com.odevlibertario.satspass.service.EventService
 import com.odevlibertario.satspass.service.TicketService
 import com.odevlibertario.satspass.service.objectMapper
@@ -37,8 +37,8 @@ class CustomerController {
         return ok(eventService.getPublishedEvents())
     }
 
-    @GetMapping("/{userId}/tickets")
-    fun getTickets(@PathVariable userId: String): ResponseEntity<List<Ticket>> {
-        return ok(ticketService.getTicket(userId))
+    @GetMapping("/tickets")
+    fun getTickets(): ResponseEntity<List<TicketAndEvent>> {
+        return ok(ticketService.getTickets())
     }
 }

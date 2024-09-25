@@ -77,3 +77,6 @@ CREATE TABLE satspass.ticket(
 
 --changeset odevlibertario:01-lightning-address
 ALTER TABLE satspass.user ADD COLUMN lightning_address TEXT;
+
+--changeset odevlibertario:02-lightning-invoice
+ALTER TABLE satspass.ticket ADD COLUMN invoice TEXT;

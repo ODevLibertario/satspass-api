@@ -94,7 +94,8 @@ class TicketService(
                     currentUserId,
                     null,
                     TicketStatus.RESERVED,
-                    invoice.paymentHash))
+                    invoice.paymentHash,
+                    invoice.paymentRequest))
             }
         }
 
@@ -111,8 +112,8 @@ class TicketService(
         }
     }
 
-    fun getTicket(userId: String): List<Ticket> {
-        return ticketDao.getTickets(userId)
+    fun getTickets(): List<TicketAndEvent> {
+        return ticketDao.getTicketsAndEvent(getCurrentUser().id)
     }
 
     fun validateQrCode(ticketId: String, request: ValidateQrCodeRequest): Boolean {

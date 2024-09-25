@@ -9,6 +9,7 @@ data class Ticket (val id: String,
                    val qrCode: String?,
                    val ticketStatus: TicketStatus,
                    val paymentHash: String,
+                   val invoice: String,
                    val createdAt: Instant?=null,
                    val updatedAt: Instant?=null
 )

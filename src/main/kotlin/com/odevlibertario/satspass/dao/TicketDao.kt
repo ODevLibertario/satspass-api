@@ -154,7 +154,8 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
                 user_id,
                 qr_code,
                 status,
-                payment_hash
+                payment_hash,
+                invoice
         ) VALUES (
             ?::uuid,
             ?::uuid,
@@ -162,6 +163,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             ?::uuid,
             ?,
             ?:: satspass.ticket_status,
+            ?,
             ?
             )
             """.trimIndent()
@@ -173,28 +175,50 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             ps.setString(5, ticket.qrCode)
             ps.setString(6, ticket.ticketStatus.name)
             ps.setString(7, ticket.paymentHash)
+            ps.setString(8, ticket.invoice)
         }
     }
 
-    fun getTickets(userId: String): List<Ticket> {
+    fun getTicketsAndEvent(userId: String): List<TicketAndEvent> {
         return jdbcTemplate.query(
             """
-            SELECT id,
-                event_id,
-                ticket_category_id,
-                user_id,
-                qr_code,
-                status,
-                payment_hash,
-                created_at,
-                updated_at
-                FROM satspass.ticket
-                WHERE user_id = ?::uuid
-                """.trimIndent(), ticketRomMapper(), userId
+            select 
+            c.category_name,
+            t.qr_code, 
+            t.invoice,
+            t.status as ticket_status, 
+            e.name, 
+            e.start_date, 
+            e.end_date, 
+            e.start_time, 
+            e.end_time, 
+            e.description, 
+            e.location, 
+            e.publicity_image_url 
+            from satspass.ticket t 
+            inner join satspass.ticket_category c on t.ticket_category_id = c.id 
+            inner join satspass.event e on t.event_id = e.id 
+            where t.user_id = ?::uuid and t.status in ('RESERVED', 'PURCHASED')
+                """.trimIndent(), { rs: ResultSet, _: Int ->
+                    TicketAndEvent(
+                        rs.getString("category_name"),
+                        rs.getString("qr_code"),
+                        rs.getString("invoice"),
+                        TicketStatus.valueOf(rs.getString("ticket_status")),
+                        rs.getString("name"),
+                        rs.getTimestamp("start_date").toInstant(),
+                        rs.getTimestamp("end_date").toInstant(),
+                        rs.getTimestamp("start_time").toInstant(),
+                        rs.getTimestamp("end_time").toInstant(),
+                        rs.getString("description"),
+                        rs.getString("location"),
+                        rs.getString("publicity_image_url")
+                    )
+            }, userId
         )
     }
 
-    private fun ticketRomMapper() = { rs: ResultSet, _: Int ->
+    private fun ticketRowMapper() = { rs: ResultSet, _: Int ->
         Ticket(
             rs.getString("id"),
             rs.getString("event_id"),
@@ -203,6 +227,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             rs.getString("qr_code"),
             TicketStatus.valueOf(rs.getString("status")),
             rs.getString("payment_hash"),
+            rs.getString("invoice"),
             rs.getTimestamp("created_at").toInstant(),
             rs.getTimestamp("updated_at").toInstant(),
         )
@@ -222,7 +247,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
                 updated_at
                 FROM satspass.ticket
                 WHERE id = ?::uuid
-                """.trimIndent(), ticketRomMapper(), ticketId
+                """.trimIndent(), ticketRowMapper(), ticketId
         ).firstOrNull()
     }
 
