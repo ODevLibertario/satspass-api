@@ -116,12 +116,14 @@ class TicketService(
         return ticketDao.getTicketsAndEvent(getCurrentUser().id)
     }
 
-    fun validateQrCode(ticketId: String, request: ValidateQrCodeRequest): Boolean {
-       val ticket = ticketDao.getTicket(ticketId)
-        val result = ticket != null && ticket.ticketStatus == TicketStatus.PURCHASED && ticket.qrCode == request.qrCode
-        if(result){
+    fun validateTicket(ticketId: String) {
+        if(ticketDao.getTicket(ticketId)?.ticketStatus == TicketStatus.PURCHASED) {
             ticketDao.updateTicket(ticketId, TicketStatus.USED)
         }
-        return result
+    }
+
+    fun getQrCodeInfo(qrCode: String): TicketAndEvent {
+        return ticketDao.getQrCodeInfo(qrCode)
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "QR Code inválido")
     }
 }

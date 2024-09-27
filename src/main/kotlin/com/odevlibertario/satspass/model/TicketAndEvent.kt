@@ -3,6 +3,7 @@ package com.odevlibertario.satspass.model
 import java.time.Instant
 
 class TicketAndEvent(
+    val ticketId: String,
     val categoryName: String,
     val qrCode: String?,
     val invoice: String,

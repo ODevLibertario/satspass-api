@@ -1,5 +1,5 @@
 package com.odevlibertario.satspass.model
 
-class ValidateQrCodeRequest ( val qrCode: String
+class ValidateTicketRequest (val qrCode: String
 
 )

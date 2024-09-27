@@ -183,6 +183,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
         return jdbcTemplate.query(
             """
             select 
+            t.id as ticket_id,
             c.category_name,
             t.qr_code, 
             t.invoice,
@@ -199,22 +200,50 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
             inner join satspass.ticket_category c on t.ticket_category_id = c.id 
             inner join satspass.event e on t.event_id = e.id 
             where t.user_id = ?::uuid and t.status in ('RESERVED', 'PURCHASED')
-                """.trimIndent(), { rs: ResultSet, _: Int ->
-                    TicketAndEvent(
-                        rs.getString("category_name"),
-                        rs.getString("qr_code"),
-                        rs.getString("invoice"),
-                        TicketStatus.valueOf(rs.getString("ticket_status")),
-                        rs.getString("name"),
-                        rs.getTimestamp("start_date").toInstant(),
-                        rs.getTimestamp("end_date").toInstant(),
-                        rs.getTimestamp("start_time").toInstant(),
-                        rs.getTimestamp("end_time").toInstant(),
-                        rs.getString("description"),
-                        rs.getString("location"),
-                        rs.getString("publicity_image_url")
-                    )
-            }, userId
+                """.trimIndent(), ticketAndEventRowMapper(), userId
+        )
+    }
+
+    fun getQrCodeInfo(qrCode: String): TicketAndEvent? {
+        return jdbcTemplate.query(
+            """
+            select 
+            t.id as ticket_id,
+            c.category_name,
+            t.qr_code, 
+            t.invoice,
+            t.status as ticket_status, 
+            e.name, 
+            e.start_date, 
+            e.end_date, 
+            e.start_time, 
+            e.end_time, 
+            e.description, 
+            e.location, 
+            e.publicity_image_url 
+            from satspass.ticket t 
+            inner join satspass.ticket_category c on t.ticket_category_id = c.id 
+            inner join satspass.event e on t.event_id = e.id 
+            where t.qr_code = ? and t.status = 'PURCHASED'
+                """.trimIndent(), ticketAndEventRowMapper(), qrCode
+        ).firstOrNull()
+    }
+
+    private fun ticketAndEventRowMapper() = { rs: ResultSet, _: Int ->
+        TicketAndEvent(
+            rs.getString("ticket_id"),
+            rs.getString("category_name"),
+            rs.getString("qr_code"),
+            rs.getString("invoice"),
+            TicketStatus.valueOf(rs.getString("ticket_status")),
+            rs.getString("name"),
+            rs.getTimestamp("start_date").toInstant(),
+            rs.getTimestamp("end_date").toInstant(),
+            rs.getTimestamp("start_time").toInstant(),
+            rs.getTimestamp("end_time").toInstant(),
+            rs.getString("description"),
+            rs.getString("location"),
+            rs.getString("publicity_image_url")
         )
     }
 
@@ -243,6 +272,7 @@ class TicketDao(val jdbcTemplate: JdbcTemplate) {
                 qr_code,
                 status,
                 payment_hash,
+                invoice,
                 created_at,
                 updated_at
                 FROM satspass.ticket
