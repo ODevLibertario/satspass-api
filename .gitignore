@@ -24,4 +24,4 @@ release.properties
 .run/
 
 /output/
-
+**/application-prod.properties
