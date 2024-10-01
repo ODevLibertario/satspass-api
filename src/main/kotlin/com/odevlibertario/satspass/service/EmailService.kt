@@ -9,7 +9,7 @@ class EmailService(private val mailSender: JavaMailSender) {
 
     fun sendSimpleEmail(to: String, subject: String, text: String) {
         val message = SimpleMailMessage()
-        message.from = "satspass@trial-3zxk54v5z06ljy6v.mlsender.net"
+        message.from = "no-reply@satspass.app"
         message.setTo(to)
         message.setSubject(subject)
         message.setText(text)

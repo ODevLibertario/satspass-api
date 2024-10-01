@@ -15,6 +15,7 @@ CREATE TABLE satspass.user (
     password_hash VARCHAR(255) NOT NULL,
     balance NUMERIC DEFAULT 0,
     status satspass.user_status NOT NULL,
+    lightning_address TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -70,13 +71,8 @@ CREATE TABLE satspass.ticket(
     user_id UUID REFERENCES satspass.user(id) NOT NULL,
     qr_code TEXT NULL,
     status satspass.ticket_status NOT NULL,
+    invoice TEXT,
     payment_hash TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
-
---changeset odevlibertario:01-lightning-address
-ALTER TABLE satspass.user ADD COLUMN lightning_address TEXT;
-
---changeset odevlibertario:02-lightning-invoice
-ALTER TABLE satspass.ticket ADD COLUMN invoice TEXT;

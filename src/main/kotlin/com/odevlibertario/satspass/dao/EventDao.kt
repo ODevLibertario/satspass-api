@@ -185,7 +185,7 @@ class EventDao(val jdbcTemplate: JdbcTemplate) {
              count(*) as count,
              sum(c.price) as total
              from satspass.ticket_category c inner join satspass.ticket t on c.id = t.ticket_category_id
-             where t.status not in ('REFUNDED', 'RESERVED') and t.event_id = ? group by  c.category_name, c.quantity, c.price;
+             where t.status not in ('REFUNDED', 'RESERVED') and t.event_id = ?::uuid group by  c.category_name, c.quantity, c.price;
         """.trimIndent(), {rs: ResultSet, _: Int ->
             TicketStatistics(
                 rs.getString("category_name"),
